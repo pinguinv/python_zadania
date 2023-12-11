@@ -93,17 +93,13 @@ class Animal:
 
   def run(self):
     self.myCurrentPosition = self.myStartPoint
+    self.addToListOfPositions(self.myCurrentPosition)
+    print(f"{self.myName} ran away")
 
   def addToListOfPositions(self, myNextPosition):
     self.myCurrentPosition = myNextPosition
     self.myListOfXs.append(self.myCurrentPosition[0])
     self.myListOfYs.append(self.myCurrentPosition[1])
-
-  # def getMyPosition(self):
-  #   return self.myCurrentPosition
-
-  def printInfo(self):
-    print(self.myStartPoint)
 
 class MidCat(Animal):
   def go(self):
@@ -112,9 +108,6 @@ class MidCat(Animal):
                       self.myCurrentPosition[1] + r.randint(-10, 10))
     if(self.canGoLikeThis(myNextPosition)):
       self.addToListOfPositions(myNextPosition)
-
-  def printInfo(self):
-    print("MidCat", self.myStartPoint)
 
 class LazyCat(Animal):
   def __init__(self, name, startX, startY):
@@ -131,9 +124,6 @@ class LazyCat(Animal):
   def scaredMice(self):
     self.scaredMiceCount += 1
 
-  def printInfo(self):
-    print("LazyCat", self.myStartPoint)
-
 class Kitty(Animal):
   def go(self):
     super()
@@ -145,9 +135,6 @@ class Kitty(Animal):
     if(self.canGoLikeThis(myNextPosition) and nextDistanceFromHome <= 100):
       self.addToListOfPositions(myNextPosition)
 
-  def printInfo(self):
-    print("Kitty", self.myStartPoint)
-
 class Mouse(Animal):
   def go(self):
     super()
@@ -156,12 +143,9 @@ class Mouse(Animal):
     if(self.canGoLikeThis(myNextPosition)):
       self.addToListOfPositions(myNextPosition)
 
-  def printInfo(self):
-    print("Mouse", self.myStartPoint)
-
 def checkIfAnimalsHaveMet(animal1, animal2):
-  pos1 = animal1.getMyPosition()
-  pos2 = animal2.getMyPosition()
+  pos1 = animal1.myCurrentPosition
+  pos2 = animal2.myCurrentPosition
   x1, y1 = pos1[0], pos1[1]
   x2, y2 = pos2[0], pos2[1]
   distance = ((x2 - x1)**2 + (y2 - y1)**2)**(1/2)
@@ -191,15 +175,21 @@ def checkMouse(animal1, animal2):
       # jeśli dystans od domu jest mniejszy niż 50 i kociak spotka mysz - ucieka mysz
       else:
         animal1.run()
-  if(type(animal2) == LazyCat):
-    # Prawdopodobieństwo zainteresowania wynosi 1/(1+e^(-0.1n)), 
-    # gdzie n to liczba dotychczas pogonionych myszy.
-    # pomysł: lista m-elementowa, gdzie m to 1/probability,
-    # wypełniona wartościami "False"/zerami,
-    # na losowym indeksie wstawić "True"/jedynkę,
-    # losować indeks tablicy i sprawdzić czy pod tym indeksem jest
-    # "True"/jedynka
-    probability = 1/(1+math.exp(-0.1 * animal2.scaredMiceCount))
+    if(type(animal2) == LazyCat):
+      # Prawdopodobieństwo zainteresowania wynosi 1/(1+e^(-0.1n)), 
+      # gdzie n to liczba dotychczas pogonionych myszy.
+      # pomysł: lista m-elementowa, gdzie m to 1/probability,
+      # wypełniona wartościami "False"/zerami,
+      # na losowym indeksie wstawić "True"/jedynkę,
+      # losować indeks tablicy i sprawdzić czy pod tym indeksem jest
+      # "True"/jedynka
+
+      # prostszy i szybszy sposób (chyba)
+      probability = 1/(1+math.exp(-0.1 * animal2.scaredMiceCount))
+      chance = r.random()
+      if(chance < probability):
+        animal1.run()
+        animal2.scaredMice()
 
 animalsLinesDict = {}
 
@@ -237,21 +227,15 @@ for key in animalsLinesDict:
         allAnimalsList.append(MidCat(name, animalsLinesDict[key][i][0], animalsLinesDict[key][i][1]))
     # print(animalsLinesDict[key][i])
 
-for i in range(1):
+for i in range(100):
   for j in allAnimalsList:
     j.go()
     # sprawdzić czy mysz spotkała kota itd
-  # b = 0
   for j in range(len(allAnimalsList)):
     for k in range(len(allAnimalsList) - (j+1)):
-      # b += 1
-      print(j, j + k + 1)
-      print(checkIfAnimalsHaveMet(allAnimalsList[j], allAnimalsList[j + k + 1]))
-    pass
-  # print(b)
-
-  
-
+      # porównanie każdego z każdym, bez powtórzeń
+      # print(j, j + k + 1)
+      checkIfAnimalsHaveMet(allAnimalsList[j], allAnimalsList[j + k + 1])
 
 axes = plt.gca()
 axes.set_xlim([0, GARDEN_SIZE[0]])
@@ -264,7 +248,8 @@ for i in range(len(allAnimalsList)):
   animal = allAnimalsList[i]
   # print(animal.myListOfXs)
   # print(len(animal.myListOfXs))
-  plt.plot(animal.myListOfXs, animal.myListOfYs, label = animal.myName)
+  plt.plot(animal.myListOfXs, animal.myListOfYs, 'o', 
+           ls='-', label = animal.myName, markevery=[0])
 
 # Shrink current axis by 20%
 ax = plt.subplot()
@@ -276,5 +261,3 @@ plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 
 plt.grid()
 plt.show()
-
-# jeszcze tylko metoda sprawdzająca czy mysz spotkała kota, kociak mysz itd itp
