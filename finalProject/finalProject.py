@@ -196,7 +196,7 @@ animalsLinesDict = {}
 # Odczytanie z plików współrzędnych początkowych wszystkich zwierząt 
 # i przypisanie do odpowiednich kluczy w słowniku
 for fileName in listOfFiles:
-  with open(f"finalProject/{fileName}", "r") as file:
+  with open(fileName, "r") as file:
     animalsLinesDict[f"{fileName[:-4]}Lines"] = file.readlines()
 # print(animalsLinesDict)
 

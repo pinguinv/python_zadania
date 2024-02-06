@@ -2,7 +2,7 @@ import random as r
 from projectConfig import GARDEN_SIZE, listOfFiles
 
 for i in range(len(listOfFiles)):
-  with open("finalProject/" + listOfFiles[i], "w") as file:
+  with open(listOfFiles[i], "w") as file:
     howMany = 3
     # niech myszy będzie 2 razy więcej niż każdego rodzaju kotów
     if(listOfFiles[i] == "mice.txt"):
